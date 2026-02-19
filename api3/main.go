@@ -9,8 +9,8 @@ import (
 )
 
 // CONFIGURACIÓN DE IPs Y PUERTOS
-const URL_API1 = "http://192.168.122.49:8080/health"   // API1 en la VM1 (¡VERIFICA ESTA IP!)
-const URL_API2 = "http://192.168.122.49:8081/health"   // API2 en la VM1 (¡VERIFICA ESTA IP!)
+const URL_API1 = "http://192.168.122.49:8080/health"   // API1 en la VM1, verificar esta IP
+const URL_API2 = "http://192.168.122.49:8081/health"   // API2 en la VM1, verificar esta IP
 
 // Estructuras JSON requeridas
 type HealthResponse struct {
