@@ -129,3 +129,10 @@ Esta sección demuestra la comunicación REST/HTTP exitosa entre los distintos s
 
 3. 
 **Habilidades Blandas:** Se practicó la resolución autónoma de problemas técnicos  (como la gestión de conflictos de *snapshots* en Containerd) y la adaptación de comandos genéricos a una red de IP dinámicas.
+
+![alt text](image.png)
+
+
+![alt text](image-1.png)
+
+![alt text](image-2.png)
