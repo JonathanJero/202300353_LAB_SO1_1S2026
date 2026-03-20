@@ -1,0 +1,1 @@
+savedcmd_/home/jona/Desktop/proyecto2/kernel_module/modulo.mod := printf '%s\n'   modulo.o | awk '!x[$$0]++ { print("/home/jona/Desktop/proyecto2/kernel_module/"$$0) }' > /home/jona/Desktop/proyecto2/kernel_module/modulo.mod

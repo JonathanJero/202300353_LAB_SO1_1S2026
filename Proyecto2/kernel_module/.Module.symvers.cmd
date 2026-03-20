@@ -1,0 +1,1 @@
+savedcmd_/home/jona/Desktop/proyecto2/kernel_module/Module.symvers :=  scripts/mod/modpost -M -m -a      -o /home/jona/Desktop/proyecto2/kernel_module/Module.symvers -T /home/jona/Desktop/proyecto2/kernel_module/modules.order -i Module.symvers -e 

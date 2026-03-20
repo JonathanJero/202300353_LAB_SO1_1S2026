@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  valkey:
+    image: valkey/valkey:latest
+    container_name: valkey_db
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey-data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+    networks:
+      - telemetria_net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana_dashboard
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=redis-datasource
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - valkey
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+    networks:
+      - telemetria_net
+
+networks:
+  telemetria_net:
+    driver: bridge
+
+volumes:
+  valkey-data:
+  grafana-data:

@@ -1,0 +1,1 @@
+savedcmd_/home/jona/Desktop/proyecto2/kernel_module/modulo.ko := ld -r -EL  -maarch64elf -z noexecstack --no-warn-rwx-segments --build-id=sha1  -T scripts/module.lds -o /home/jona/Desktop/proyecto2/kernel_module/modulo.ko /home/jona/Desktop/proyecto2/kernel_module/modulo.o /home/jona/Desktop/proyecto2/kernel_module/modulo.mod.o
