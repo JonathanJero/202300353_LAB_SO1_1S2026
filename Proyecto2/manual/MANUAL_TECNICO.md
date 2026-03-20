@@ -1,4 +1,4 @@
-#  Manual Técnico — Proyecto 2
+# Manual Técnico — Proyecto 2
 **Sistemas Operativos 1 | Universidad San Carlos de Guatemala**
 
 > **Estudiante:** Jonathan Eliud Jerónimo Salguero
@@ -7,21 +7,18 @@
 
 ---
 
-##  Tabla de Contenidos
+## Tabla de Contenidos
 
 1. [Descripción General](#1-descripción-general)
 2. [Arquitectura del Sistema](#2-arquitectura-del-sistema)
 3. [Requisitos Previos](#3-requisitos-previos)
 4. [Estructura del Repositorio](#4-estructura-del-repositorio)
-5. [Guía de Instalación y Ejecución](#5-guía-de-instalación-y-ejecución)
-   - [5.1 Infraestructura (Valkey + Grafana)](#51-levantamiento-de-la-infraestructura-valkey--grafana)
-   - [5.2 Módulo de Kernel](#52-carga-de-la-sonda-módulo-de-kernel-en-c)
-   - [5.3 Cronjob](#53-configuración-del-generador-de-carga-cronjob)
-   - [5.4 Daemon en Go](#54-ejecución-del-daemon-en-go)
-6. [Verificación y Pruebas](#6-verificación-y-pruebas)
+5. [Guía de Ejecución Automatizada](#5-guía-de-ejecución-automatizada)
+6. [Verificación y Evidencias (Pruebas)](#6-verificación-y-evidencias-pruebas)
 7. [Lógica de Gestión de Contenedores](#7-lógica-de-gestión-de-contenedores)
-8. [Manejo de Errores y Apagado Seguro](#8-manejo-de-errores-y-apagado-seguro)
-9. [Dashboard en Grafana](#9-dashboard-en-grafana)
+8. [Dashboard en Grafana](#8-dashboard-en-grafana)
+9. [Manejo de Errores y Apagado Seguro](#9-manejo-de-errores-y-apagado-seguro)
+10. [Notas de Compatibilidad (ARM64)](#10-notas-de-compatibilidad-arm64)
 
 ---
 
@@ -35,28 +32,32 @@ El sistema combina programación a **bajo nivel** (módulo de kernel en C) con *
 
 | Componente | Tecnología | Rol |
 |---|---|---|
-| Módulo de Kernel | C | Sensor de métricas del sistema desde el espacio del kernel |
-| Daemon | Go | Cerebro del sistema: lee, decide y actúa |
-| Generador de carga | Bash + Cron | Simula contenedores de prueba cada 2 minutos |
-| Base de datos | Valkey (Redis) | Almacenamiento de métricas y logs |
-| Dashboard | Grafana | Visualización en tiempo real |
+| Módulo de Kernel | C | Sensor de métricas del sistema desde el espacio del kernel. |
+| Daemon | Go | Cerebro del sistema: automatiza el inicio, lee datos, decide y actúa. |
+| Generador de carga | Bash + Cron | Simula creación de contenedores de prueba cada 2 minutos. |
+| Base de datos | Valkey (Redis) | Almacenamiento rápido en memoria de métricas y logs. |
+| Dashboard | Grafana | Visualización del ecosistema en tiempo real con persistencia de datos. |
 
 ---
 
 ## 2. Arquitectura del Sistema
 
-```
+El sistema fue diseñado con un enfoque de despliegue automatizado. El Daemon de Go actúa como orquestador principal.
+
+```text
 ┌─────────────────────────────────────────────────────────┐
 │                  DAEMON GESTIONADOR (Go)                │
 │                                                         │
-│  1. Inicia contenedor Grafana                           │
-│  2. Instala cronjob generador                           │
-│  3. Carga módulo de kernel (script)                     │
-│  4. Loop cada 20s:                                      │
+│  [FASE DE INICIO AUTOMÁTICO]                            │
+│  1. Levanta Valkey y Grafana (Docker Compose)           │
+│  2. Compila e inserta Módulo C (insmod)                 │
+│  3. Programa Cronjob generador en el sistema            │
+│                                                         │
+│  [LOOP DE MONITOREO - Cada 20s]                         │
 │     ├── Lee /proc/continfo_pr2_so1_202300353            │
-│     ├── Parsea JSON                                     │
-│     ├── Decide qué contenedores eliminar                │
-│     └── Escribe métricas en Valkey                      │
+│     ├── Parsea JSON a Estructuras Seguras               │
+│     ├── Elimina contenedores excedentes (Docker API)    │
+│     └── Escribe métricas y Top 5 en Valkey              │
 └──────────────────────┬──────────────────────────────────┘
                        │
        ┌───────────────┼──────────────────────┐
@@ -67,375 +68,199 @@ El sistema combina programación a **bajo nivel** (módulo de kernel en C) con *
 │             │ │             │      │                  │
 │ task_struct │ │ Cada 2 min  │      │ Dashboard:       │
 │ → /proc/    │ │ crea 5      │      │ - RAM total/libre│
-│ continfo_   │ │ contenedores│      │ - Top5 CPU/RAM   │
+│ continfo_   │ │ contenedores│      │ - Top 5 CPU/RAM  │
 │ pr2_so1_    │ │ aleatorios  │      │ - Eliminados     │
-│ 202300353   │ │             │      │                  │
 └─────────────┘ └─────────────┘      └──────────────────┘
-```
+````
 
-### Flujo de datos
+-----
 
-```
-Kernel (task_struct)
-        │
-        ▼
-/proc/continfo_pr2_so1_202300353  (JSON)
-        │
-        ▼
-   Daemon Go  ──► Docker API (stop/rm contenedores)
-        │
-        ▼
-     Valkey  ──► Grafana (Dashboard)
-```
-
----
-
-## 3. Requisitos Previos
+## 3\. Requisitos Previos
 
 ### Sistema Operativo
-- Ubuntu Server (arquitectura ARM64 o x86_64)
-- Kernel Linux con soporte para módulos cargables
+
+  - Ubuntu Server (arquitectura ARM64 o x86\_64).
+  - Kernel Linux con soporte para módulos cargables (`CONFIG_MODULES=y`).
 
 ### Dependencias del sistema
 
+Asegúrese de contar con las siguientes herramientas antes de la ejecución:
+
 ```bash
-# Compiladores y cabeceras del kernel
+# Compiladores de C y cabeceras del kernel actual
 sudo apt update
 sudo apt install -y build-essential linux-headers-$(uname -r)
 
 # Entorno Go
 sudo apt install -y golang-go
 
-# Docker y Docker Compose
+# Ecosistema Docker
 sudo apt install -y docker.io docker-compose-v2
-
-# Agregar usuario al grupo docker (opcional, evita usar sudo)
-sudo usermod -aG docker $USER
 ```
 
-### Verificación de dependencias
+-----
 
-```bash
-# Verificar versión del kernel
-uname -r
+## 4\. Estructura del Repositorio
 
-# Verificar Go
-go version
-
-# Verificar Docker
-docker --version
-docker compose version
-```
-
----
-
-## 4. Estructura del Repositorio
-
-```
+```text
 proyecto2/
 ├── kernel_module/
-│   ├── modulo.c          # Código fuente del módulo de kernel
-│   └── Makefile          # Script de compilación del módulo
+│   ├── modulo.c          # Código fuente de la Sonda en C
+│   └── Makefile          # Script de compilación (Kbuild)
 ├── cronjob/
-│   └── generador.sh      # Script Bash generador de contenedores
+│   └── generador.sh      # Generador de carga Alpine/AWK
 ├── go_daemon/
-│   ├── main.go           # Código fuente del Daemon en Go
-│   └── go.mod            # Dependencias del módulo Go
-├── db/
-│   └── docker-compose.yml # Definición de servicios Valkey + Grafana
-└── README.md / MANUAL_TECNICO.md
+│   ├── main.go           # Daemon orquestador principal
+│   └── go.mod            # Módulos ([github.com/redis/go-redis/v9](https://github.com/redis/go-redis/v9))
+└── db/
+    └── docker-compose.yml # Infraestructura con Volúmenes Persistentes
 ```
 
----
+-----
 
-## 5. Guía de Instalación y Ejecución
+## 5\. Guía de Ejecución Automatizada
 
->  **Orden importante:** Siga los pasos en el orden indicado para evitar errores de conexión entre componentes.
+El sistema ha sido diseñado para ejecutarse mediante un único punto de entrada (el Daemon en Go), el cual se encarga de preparar todo el entorno operativo.
 
-### 5.1 Levantamiento de la Infraestructura (Valkey + Grafana)
-
-Valkey y Grafana deben estar corriendo antes de iniciar el Daemon.
-
-```bash
-cd db
-sudo docker compose up -d
-```
-
-**Verificación:**
-```bash
-docker ps
-# Deben aparecer los contenedores de valkey y grafana corriendo
-```
-
----
-
-### 5.2 Carga de la Sonda (Módulo de Kernel en C)
-
-El módulo debe compilarse con el `Makefile` provisto para que se enlace correctamente con la versión actual del kernel.
+**Paso 1: Preparar la Sonda (Compilación del Kernel)**
+Antes de arrancar el cerebro, el módulo debe estar compilado para su versión de Kernel.
 
 ```bash
-cd kernel_module
-
-# Limpiar compilaciones previas
+cd ~/Desktop/proyecto2/kernel_module
 make clean
-
-# Compilar el módulo
 make
-
-# Insertar el módulo en el kernel
-sudo insmod modulo.ko
 ```
 
-**Verificación — leer la interfaz `/proc`:**
+**Paso 2: Arrancar el Sistema Maestro (Daemon Go)**
+El Daemon requiere permisos de superusuario para interactuar con Docker y cargar el módulo del kernel.
+
+```bash
+cd ~/Desktop/proyecto2/go_daemon
+go build -o daemon_so1 main.go
+sudo ./daemon_so1
+```
+
+![alt text](image.png)
+
+**Paso 3: Acceso al Dashboard**
+Ingresar desde el navegador web a `http://<IP_DE_LA_MAQUINA>:3000`. La conexión con la base de datos y la creación del panel ya se encuentran persistidas mediante Volúmenes de Docker.
+
+-----
+
+## 6\. Verificación y Evidencias (Pruebas)
+
+### 6.1 Interfaz `/proc` y Estructura JSON
+
+El módulo C expone en tiempo real las métricas extraídas iterando sobre `task_struct`.
+
 ```bash
 cat /proc/continfo_pr2_so1_202300353
 ```
 
-La salida esperada es un JSON con la siguiente estructura:
+![alt text](image-1.png)
+
+**Estructura esperada:**
 
 ```json
 {
-  "total_ram": 8192,
-  "free_ram": 4096,
-  "used_ram": 4096,
-  "processes": [
+  "ram": {
+    "total_mb": 7935,
+    "libre_mb": 112,
+    "en_uso_mb": 7823
+  },
+  "procesos": [
     {
-      "pid": 1234,
-      "name": "containerd",
-      "cmdline": "docker-containerd",
-      "vsz": 102400,
-      "rss": 51200,
-      "mem_percent": 0.62,
-      "cpu_percent": 1.30
+      "pid": 14568,
+      "nombre": "awk",
+      "vsz_kb": 591604,
+      "rss_kb": 590720,
+      "mem_porcentaje": 9,
+      "cpu_ticks": 8131000000
     }
   ]
 }
 ```
 
-**Para descargar el módulo:**
-```bash
-sudo rmmod modulo
-```
+### 6.2 Lógica de Regulación en Tiempo Real
 
----
+Cuando el Cronjob inyecta los 5 contenedores cada 2 minutos, el Daemon detecta el exceso en su ciclo de 20 segundos y aplica la limpieza.
 
-### 5.3 Configuración del Generador de Carga (Cronjob)
+![alt text](image-2.png)
 
->  Este paso puede omitirse si el Daemon de Go ya está configurado para instalar el cronjob automáticamente al iniciar.
+-----
 
-```bash
-cd cronjob
+## 7\. Lógica de Gestión de Contenedores
 
-# Otorgar permisos de ejecución
-chmod +x generador.sh
+El Daemon aplica reglas de negocio estrictas interactuando con la API de Docker mediante `exec.Command`.
 
-# Programar la tarea cada 2 minutos
-(crontab -l 2>/dev/null; echo "*/2 * * * * $(pwd)/generador.sh") | crontab -
+### Restricciones Invariantes
 
-# Verificar que el cronjob se registró
-crontab -l
-```
-
-**¿Qué hace `generador.sh`?**
-
-Crea 5 contenedores Docker aleatorios entre las siguientes categorías:
-
-| Categoría | Imagen | Comando | Descripción |
-|---|---|---|---|
-| Alto consumo RAM | `roldyoran/go-client` | `docker run -d roldyoran/go-client` | Consume RAM significativa |
-| Alto consumo CPU | `alpine` | `docker run -d alpine sh -c "while true; do echo '2^20' \| bc > /dev/null; sleep 2; done"` | Alta carga de cómputo |
-| Bajo consumo | `alpine` | `docker run -d alpine sleep 240` | Consumo mínimo de recursos |
-
----
-
-### 5.4 Ejecución del Daemon en Go
-
-```bash
-cd go_daemon
-
-# Descargar dependencias
-go get github.com/redis/go-redis/v9
-
-# Compilar el binario
-go build -o daemon_so1 main.go
-
-# Iniciar el servicio
-./daemon_so1
-```
-
-Al iniciar, el Daemon realiza automáticamente:
-1.  Levanta el contenedor de Grafana (si no está corriendo)
-2.  Instala el cronjob generador de contenedores
-3.  Ejecuta el script para cargar el módulo de kernel
-4.  Inicia el loop principal cada 20 segundos
-
----
-
-## 6. Verificación y Pruebas
-
-### 6.1 Verificar la interfaz `/proc`
-
-```bash
-cat /proc/continfo_pr2_so1_202300353
-```
-
-Debe devolver JSON con campos: `pid`, `name`, `cmdline`, `vsz`, `rss`, `mem_percent`, `cpu_percent`.
-
-### 6.2 Verificar la lógica de eliminación
-
-En la terminal donde corre el Daemon, tras unos minutos deben aparecer mensajes como:
-
-```
-[*] Iteración del daemon iniciada
-[+] Contenedores de alto consumo: 3  →  Eliminando 1 excedente(s)...
-[!] Contenedor eliminado: abc123def456
-[+] Estado final: 2 alto consumo | 3 bajo consumo
-```
-
-### 6.3 Verificar contenedores activos
-
-```bash
-docker ps
-```
-
-Se deben observar como máximo:
-- 1 contenedor de Grafana
-- 1 contenedor de Valkey
-- 2 contenedores de alto consumo
-- 3 contenedores de bajo consumo
-
-### 6.4 Verificar escritura en Valkey
-
-```bash
-docker exec -it <nombre_contenedor_valkey> valkey-cli KEYS "*"
-```
-
-Deben aparecer claves con métricas de RAM, contenedores eliminados y procesos.
-
----
-
-## 7. Lógica de Gestión de Contenedores
-
-El Daemon aplica las siguientes **restricciones invariantes** en cada iteración:
-
-| Restricción | Valor |
+| Regla | Condición de Cumplimiento |
 |---|---|
-| Contenedores de bajo consumo activos | Siempre exactamente **3** |
-| Contenedores de alto consumo activos | Siempre exactamente **2** |
-| Contenedor de Grafana | **Nunca** se elimina |
+| Contenedores Bajo Consumo | Siempre se mantienen exactamente **3** vivos. |
+| Contenedores Alto Consumo | Siempre se mantienen exactamente **2** vivos. |
+| Infraestructura Base | Grafana y Valkey están excluidos del algoritmo de eliminación. |
 
-### Criterios de ordenamiento para decidir qué eliminar
+### Criterios de Selección (Top 5)
 
-Cuando hay más contenedores de los permitidos, el Daemon ordena los excedentes por:
+Para alimentar el Dashboard, el Daemon de Go ordena el arreglo de procesos extraído del Kernel utilizando la función `sort.Slice` nativa:
 
-1. **Uso de RAM** (porcentaje)
-2. **VSZ** — Tamaño de memoria virtual (KB)
-3. **RSS** — Memoria física residente (KB)
-4. **Uso de CPU** (porcentaje)
+1.  **Top 5 RAM:** Ordenado de forma descendente basándose en la Memoria Física Residente (`RssKb`).
+2.  **Top 5 CPU:** Ordenado de forma descendente basándose en los Ticks de CPU (`CpuTicks` = `utime` + `stime`).
 
-Los contenedores con mayor consumo de recursos y que excedan la cuota son detenidos (`docker stop`) y eliminados (`docker rm`).
+-----
 
-### Ciclo de vida del loop principal
+## 8\. Dashboard en Grafana
 
-```
-┌─ Cada 20 segundos ───────────────────────────────────┐
-│                                                       │
-│  1. Leer /proc/continfo_pr2_so1_202300353             │
-│  2. Deserializar JSON                                 │
-│  3. Clasificar contenedores (alto / bajo consumo)     │
-│  4. Ordenar por RAM, VSZ, RSS, CPU                    │
-│  5. Eliminar excedentes (stop + rm via Docker API)    │
-│  6. Guardar métricas en Valkey                        │
-│     ├── RAM total, libre, usada                       │
-│     ├── Conteo de contenedores eliminados             │
-│     └── Top 5 por CPU y RAM                           │
-│                                                       │
-└───────────────────────────────────────────────────────┘
-```
+![alt text](image-3.png)
+![alt text](image-4.png)
 
----
+El panel consume los datos enviados por Go a Valkey mediante los siguientes comandos:
 
-## 8. Manejo de Errores y Apagado Seguro
+  * **Tarjetas:** Lectura directa con comando `GET` a llaves simples (`sys_ram_total`, `sys_contenedores_eliminados`).
+  * **Series de Tiempo:** Monitoreo histórico del `GET sys_ram_uso`.
+  * **Gráficos de Pastel:** Uso del comando Hash `HGETALL` sobre las llaves `top5_ram` y `top5_cpu`.
 
-El Daemon intercepta señales del sistema operativo (`SIGTERM`, `SIGINT`) para garantizar un cierre limpio.
+-----
 
-**Al presionar `Ctrl + C`:**
+## 9\. Manejo de Errores y Apagado Seguro
 
-```
-^C
-[!] Señal de interrupción recibida
-[*] Eliminando cronjob del sistema...
-[✓] Cronjob eliminado correctamente
-[*] Cerrando conexión con Valkey...
-[✓] Daemon detenido de forma segura
-```
+El sistema fue programado para evitar "fugas de recursos" (procesos huérfanos) mediante el manejo de señales del sistema operativo (`SIGTERM`, `SIGINT` mediante canales de Go).
 
-**Pasos para apagar el sistema completo:**
+**Procedimiento de Apagado Correcto:**
+
+1.  En la terminal del Daemon Go, presionar **`Ctrl + C`**.
+2.  El sistema intercepta la señal y ejecuta automáticamente la función `limpiarInfraestructura()`.
+3.  Se remueve la entrada de `generador.sh` del Crontab.
+4.  Se descarga el módulo C del Kernel (`rmmod`).
+
+![alt text](image-5.png)
+
+**(Opcional) Liberar puertos e infraestructura base:**
 
 ```bash
-# 1. Detener el Daemon (Ctrl+C en su terminal, o:)
-kill -SIGTERM $(pgrep daemon_so1)
-
-# 2. Descargar el módulo de kernel
-cd kernel_module
-sudo rmmod modulo
-
-# 3. Verificar que no quede en /proc
-ls /proc/continfo_pr2_so1_202300353  # No debe existir
-
-# 4. Bajar la infraestructura Docker
-cd db
+cd ~/Desktop/proyecto2/db
 sudo docker compose down
 ```
 
----
+*Nota: El Dashboard de Grafana no se perderá al ejecutar este comando, ya que se implementaron `volumes` en Docker para garantizar la persistencia.*
 
-## 9. Dashboard en Grafana
+-----
 
-### Acceso
+## 10\. Notas de Compatibilidad (ARM64)
 
-```
-URL:      http://<IP_DE_LA_VM>:3000
-Usuario:  admin
-Password: admin
-```
+El enunciado del proyecto sugiere el uso de la imagen `roldyoran/go-client` para simular el perfil de "Alto Consumo" de memoria RAM. Sin embargo, el entorno de desarrollo y la máquina virtual actual se ejecutan sobre un procesador Apple Silicon M2 (arquitectura ARM64 / aarch64). Al intentar desplegar dicha imagen, se presentaban fallos de ejecución (salida silenciosa del contenedor) debido a que fue compilada exclusivamente para arquitecturas tradicionales `amd64` (Intel/AMD).
 
-### Paneles del dashboard
-
-El dashboard **"Panel de Contenedores — 202300353"** contiene los siguientes paneles:
-
-| Panel | Tipo | Descripción |
-|---|---|---|
-| Total RAM | Card / Stat | Memoria RAM total del sistema en MB |
-| Free RAM | Card / Stat | Memoria RAM libre disponible en MB |
-| Total Contenedores Eliminados | Card / Stat | Acumulado histórico de eliminaciones |
-| Uso de RAM en el tiempo | Time Series | Evolución del consumo de RAM con timestamps |
-| Top 5 por Consumo de RAM | Pie Chart | Top 5 procesos/contenedores históricos por RAM |
-| Top 5 por Consumo de CPU | Pie Chart | Top 5 procesos/contenedores históricos por CPU |
-| RAM Usada | Card / Stat | Memoria RAM actualmente en uso en MB |
-
-### Fuente de datos
-
-- **Tipo:** Redis (compatible con Valkey)
-- **Host:** `valkey:6379` (dentro de la red Docker Compose)
-- **Sin autenticación** (configuración local)
-
----
-
-##  Notas Adicionales
-
-- El módulo de kernel fue desarrollado y probado sobre arquitectura **ARM64** en Ubuntu Server. Si se ejecuta en **x86_64**, recompilar con `make clean && make`.
-- El porcentaje de CPU puede mostrar valores muy altos en la primera lectura debido a los cálculos diferenciales del kernel; esto es comportamiento esperado.
-- El `docker-compose.yml` define una red interna para que Grafana y Valkey se comuniquen directamente sin exponer puertos innecesarios.
-
-- Nota sobre Adaptación de Imágenes (Compatibilidad ARM64)
-
-El enunciado del proyecto sugiere el uso de la imagen `roldyoran/go-client` para simular el perfil de "Alto Consumo" de memoria RAM. Sin embargo, el entorno de desarrollo y la máquina virtual se ejecutan sobre un procesador Apple Silicon M2 (arquitectura ARM64 / aarch64). Al intentar desplegar dicha imagen, se presentaban fallos de ejecución (salida silenciosa del contenedor) debido a que fue compilada exclusivamente para arquitecturas tradicionales `amd64` (Intel/AMD).
-
-Para resolver esta limitación de hardware sin comprometer el rendimiento con emuladores lentos (como Rosetta), se adaptó el script generador (`generador.sh`) para utilizar la imagen oficial de `alpine`, la cual cuenta con soporte nativo para ARM64. 
+Para resolver esta limitación de hardware sin comprometer el rendimiento con emuladores como Rosetta, se adaptó el script generador (`generador.sh`) para utilizar la imagen oficial de `alpine`, la cual cuenta con soporte nativo para ARM64.
 
 Para lograr el mismo perfil de alto consumo de RAM requerido por la rúbrica, se implementó un comando interno utilizando `awk` que inunda un arreglo en memoria, logrando simular el estrés necesario de forma 100% nativa y estable:
-`docker run -d alpine awk 'BEGIN {for(i=0;i<5000000;i++) a[i]="SO1_PROYECTO2_RAM_TEST_STRING_FILL"; system("sleep 240")}'`
 
----
+```bash
+docker run -d alpine awk 'BEGIN {for(i=0;i<5000000;i++) a[i]="SO1_PROYECTO2_RAM_TEST_STRING_FILL"; system("sleep 240")}'
+```
 
+
+Comando para revisar los procesos cada 2 segundos
+```bash
+watch -n 2 'docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Command}}"'
+```

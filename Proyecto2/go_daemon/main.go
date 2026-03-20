@@ -50,7 +50,6 @@ func inicializarInfraestructura() {
 	exec.Command("sh", "-c", "cd ../db && sudo docker compose up -d").Run()
 	
 	fmt.Println("[*] 2. Verificando/Cargando Sonda de Kernel (Módulo C)...")
-	// Solo hace insmod si lsmod no encuentra el modulo cargado
 	exec.Command("sh", "-c", "lsmod | grep -q modulo || (cd ../kernel_module && sudo insmod modulo.ko)").Run()
 	
 	fmt.Println("[*] 3. Verificando/Programando Cronjob generador...")
@@ -64,7 +63,6 @@ func inicializarInfraestructura() {
 func limpiarInfraestructura() {
 	fmt.Println("\n[!] Apagando daemon y limpiando sistema (Cronjob y Kernel)...")
 	exec.Command("sh", "-c", "crontab -l | grep -v 'generador.sh' | crontab -").Run()
-	// Solo hace rmmod si el modulo esta cargado
 	exec.Command("sh", "-c", "lsmod | grep -q modulo && cd ../kernel_module && sudo rmmod modulo").Run()
 }
 
@@ -85,14 +83,15 @@ func main() {
 		os.Exit(0)
 	}()
 
-	ticker := time.NewTicker(20 * time.Second)
+	fmt.Printf("[%s] Infraestructura lista. Ejecutando analisis inicial inmediato...\n", time.Now().Format("15:04:05"))
+	ejecutarCicloAnalisis(rdb)
+
+	ticker := time.NewTicker(40 * time.Second)
 	defer ticker.Stop()
-	
-	fmt.Println("[*] Infraestructura lista. Iniciando ciclo de monitoreo (cada 20s)...")
 	
 	for {
 		<-ticker.C
-		fmt.Printf("[%s] Ejecutando análisis de contenedores...\n", time.Now().Format("15:04:05"))
+		fmt.Printf("[%s] Ejecutando analisis de contenedores...\n", time.Now().Format("15:04:05"))
 		ejecutarCicloAnalisis(rdb)
 	}
 }
@@ -100,7 +99,7 @@ func main() {
 func ejecutarCicloAnalisis(rdb *redis.Client) {
 	data, err := os.ReadFile("/proc/continfo_pr2_so1_202300353")
 	if err != nil {
-		fmt.Printf("[!] Esperando a que el módulo genere datos en /proc...\n")
+		fmt.Printf("[!] Esperando a que el modulo genere datos en /proc...\n")
 		return
 	}
 	
@@ -126,19 +125,26 @@ func ejecutarCicloAnalisis(rdb *redis.Client) {
 		rdb.HSet(ctx, "top5_cpu", fmt.Sprintf("%d-%s", p.PID, p.Nombre), p.CpuTicks)
 	}
 
-	gestionarContenedores(rdb)
+	gestionarContenedores()
 }
 
-func gestionarContenedores(rdb *redis.Client) {
-	out, _ := exec.Command("docker", "ps", "--format", "{{.ID}}|{{.Command}}").Output()
+func gestionarContenedores() {
+	out, _ := exec.Command("docker", "ps", "--no-trunc", "--format", "{{.ID}}|{{.Command}}|{{.Names}}").Output()
 	lineas := strings.Split(string(out), "\n")
 	var altos, bajos []Contenedor
 
 	for _, linea := range lineas {
-		if linea == "" || strings.Contains(linea, "grafana") || strings.Contains(linea, "valkey") {
+		if linea == "" {
 			continue
 		}
+		
+		lineaMinuscula := strings.ToLower(linea)
+		if strings.Contains(lineaMinuscula, "grafana") || strings.Contains(lineaMinuscula, "valkey") {
+			continue
+		}
+
 		partes := strings.Split(linea, "|")
+		// partes[0]=ID, partes[1]=Command, partes[2]=Name
 		esAlto := strings.Contains(partes[1], "awk") || strings.Contains(partes[1], "bc")
 		c := Contenedor{ID: partes[0], Command: partes[1], EsAlto: esAlto}
 		
@@ -151,6 +157,19 @@ func gestionarContenedores(rdb *redis.Client) {
 
 	eliminarExceso(altos, 2, "Alto Consumo")
 	eliminarExceso(bajos, 3, "Bajo Consumo")
+
+	altosRestantes := len(altos)
+	if altosRestantes > 2 { altosRestantes = 2 }
+	
+	bajosRestantes := len(bajos)
+	if bajosRestantes > 3 { bajosRestantes = 3 }
+
+	if altosRestantes < 2 {
+		crearFaltantes(2 - altosRestantes, "Alto Consumo")
+	}
+	if bajosRestantes < 3 {
+		crearFaltantes(3 - bajosRestantes, "Bajo Consumo")
+	}
 }
 
 func eliminarExceso(lista []Contenedor, limite int, tipo string) {
@@ -159,7 +178,19 @@ func eliminarExceso(lista []Contenedor, limite int, tipo string) {
 		for i := 0; i < exceso; i++ {
 			exec.Command("docker", "rm", "-f", lista[i].ID).Run()
 			totalEliminados++
-			fmt.Printf("   -> [X] %s excedido. Contenedor eliminado: %s\n", tipo, lista[i].ID)
+			fmt.Printf("   -> [X] Exceso detectado. Eliminando %s: %s\n", tipo, lista[i].ID)
+		}
+	}
+}
+
+func crearFaltantes(cantidad int, tipo string) {
+	for i := 0; i < cantidad; i++ {
+		if tipo == "Alto Consumo" {
+			fmt.Printf("   -> [+] Faltan %s. Levantando uno nuevo...\n", tipo)
+			exec.Command("sh", "-c", "docker run -d alpine sh -c \"while true; do echo '2^20' | bc > /dev/null; sleep 2; done\"").Run()
+		} else {
+			fmt.Printf("   -> [+] Faltan %s. Levantando uno nuevo...\n", tipo)
+			exec.Command("sh", "-c", "docker run -d alpine sleep 240").Run()
 		}
 	}
 }
