@@ -1,0 +1,47 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: valkey-vm
+  namespace: mumnk8s
+spec:
+  runStrategy: Always
+  dataVolumeTemplates:
+    - metadata:
+        name: valkey-vm-rootdisk
+      spec:
+        source:
+          registry:
+            url: docker://quay.io/containerdisks/ubuntu:22.04
+        storage:
+          resources:
+            requests:
+              storage: 20Gi
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: valkey-vm
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        resources:
+          requests:
+            memory: 2Gi
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: rootdisk
+          dataVolume:
+            name: valkey-vm-rootdisk
+        - name: cloudinit
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              package_update: true
+              packages:
+                - docker.io
+              runcmd:
+                - systemctl enable docker
+                - systemctl start docker
+                - docker run -d --name valkey --restart unless-stopped -p 6379:6379 valkey/valkey:8

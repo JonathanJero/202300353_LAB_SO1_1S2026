@@ -1,0 +1,14 @@
+project_id        = "tu-proyecto-gcp"
+region            = "us-central1"
+zone              = "us-central1-a"
+name_prefix       = "mumnk8s"
+gke_name          = "mumnk8s-gke"
+node_count        = 2
+node_machine_type = "n1-standard-2"
+zot_machine_type  = "n1-standard-1"
+admin_cidr        = "0.0.0.0/0"
+
+# Recomendado: usar dominio para TLS valido para pulls desde Kubernetes.
+# Ejemplo: "zot.tudominio.com"
+zot_domain = ""
+zot_email  = ""

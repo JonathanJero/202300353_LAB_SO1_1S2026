@@ -1,0 +1,47 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: grafana-vm
+  namespace: mumnk8s
+spec:
+  runStrategy: Always
+  dataVolumeTemplates:
+    - metadata:
+        name: grafana-vm-rootdisk
+      spec:
+        source:
+          registry:
+            url: docker://quay.io/containerdisks/ubuntu:22.04
+        storage:
+          resources:
+            requests:
+              storage: 20Gi
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: grafana-vm
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        resources:
+          requests:
+            memory: 2Gi
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: rootdisk
+          dataVolume:
+            name: grafana-vm-rootdisk
+        - name: cloudinit
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              package_update: true
+              packages:
+                - docker.io
+              runcmd:
+                - systemctl enable docker
+                - systemctl start docker
+                - docker run -d --name grafana --restart unless-stopped -p 3000:3000 grafana/grafana:11.2.0
