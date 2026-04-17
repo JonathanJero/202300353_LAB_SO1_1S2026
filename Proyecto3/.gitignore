@@ -1,0 +1,25 @@
+# Local env and secrets
+.env
+.env.*
+secrets/
+*.pem
+*.key
+*.p12
+*.crt
+*service-account*.json
+gcp-key*.json
+
+# Terraform local state
+infra/terraform/.terraform/
+infra/terraform/terraform.tfstate
+infra/terraform/terraform.tfstate.backup
+infra/terraform/terraform.tfvars
+infra/terraform/crash.log
+
+# Python / Locust cache
+__pycache__/
+*.pyc
+.venv/
+
+# OS files
+.DS_Store

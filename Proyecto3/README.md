@@ -18,11 +18,15 @@ Este paquete te deja una base completa para levantar el proyecto del enunciado:
    - kubectl
    - terraform
    - docker
+  - Guia detallada: ver docs/LOCAL_SETUP.md
 5. Hacer login:
 
 ```bash
 gcloud auth login
+gcloud auth application-default login
 ```
+
+Tu carnet por defecto en scripts es: 202300353.
 
 ## 2) Bootstrap inicial de GCP
 
@@ -98,9 +102,14 @@ kubectl -n mumnk8s get vm,vmi,svc
 ## 6) Desplegar flujo principal del proyecto
 
 ```bash
-export CARNET="202300353"
 export ZOT_REGISTRY="zot.tudominio.com"
 ./scripts/deploy_k8s.sh
+```
+
+Si necesitas sobrescribir carnet:
+
+```bash
+CARNET=202300353 ZOT_REGISTRY="zot.tudominio.com" ./scripts/deploy_k8s.sh
 ```
 
 Verifica:
@@ -138,13 +147,24 @@ CARNET=202300353 locust -f locustfile.py --host http://IP_O_HOST_GATEWAY
 - OCI Artifact documentado.
 - Manual tecnico en Markdown y evidencia de pruebas.
 
-## 9) Limitaciones de esta base
+## 9) Seguridad para no filtrar credenciales
+
+- No subir llaves JSON de GCP al repositorio.
+- El archivo `.gitignore` ya excluye llaves y estados de Terraform.
+- RabbitMQ Secret se crea al desplegar, no esta hardcodeado en YAML.
+- Si quieres password fija para RabbitMQ, define variable de entorno antes de desplegar:
+
+```bash
+RABBITMQ_PASSWORD="tu-password-seguro" ZOT_REGISTRY="zot.tudominio.com" ./scripts/deploy_k8s.sh
+```
+
+## 10) Limitaciones de esta base
 
 - Los manifiestos apuntan a imagenes `latest`; debes implementar y construir tus apps.
 - El flujo Dapr es opcional y no se incluye aun.
 - El dashboard final se construye en Grafana cuando ya tengas datos en Valkey.
 
-## 10) Proximo paso sugerido
+## 11) Proximo paso sugerido
 
 Implementar primero la API Rust y el Go ingest/writer para dejar funcional el flujo:
 
