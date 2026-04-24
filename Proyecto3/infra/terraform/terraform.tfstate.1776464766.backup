@@ -1,0 +1,519 @@
+{
+  "version": 4,
+  "terraform_version": "1.14.8",
+  "serial": 12,
+  "lineage": "c4d81073-461f-021c-8e0d-e72c821d5198",
+  "outputs": {
+    "cluster_name": {
+      "value": "mumnk8s-gke",
+      "type": "string"
+    },
+    "cluster_region": {
+      "value": "us-central1",
+      "type": "string"
+    },
+    "zot_public_ip": {
+      "value": "34.31.223.233",
+      "type": "string"
+    },
+    "zot_registry_http": {
+      "value": "34.31.223.233:5000",
+      "type": "string"
+    },
+    "zot_registry_https": {
+      "value": "(no domain configured)",
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "google_compute_address",
+      "name": "zot_ip",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "address": "34.31.223.233",
+            "address_type": "EXTERNAL",
+            "creation_timestamp": "2026-04-17T12:31:57.649-07:00",
+            "description": "",
+            "effective_labels": {},
+            "id": "projects/mumnk8s-202300353/regions/us-central1/addresses/mumnk8s-zot-ip",
+            "ip_version": "",
+            "ipv6_endpoint_type": "",
+            "label_fingerprint": "42WmSpB8rSM=",
+            "labels": null,
+            "name": "mumnk8s-zot-ip",
+            "network": "",
+            "network_tier": "PREMIUM",
+            "prefix_length": 0,
+            "project": "mumnk8s-202300353",
+            "purpose": "",
+            "region": "us-central1",
+            "self_link": "https://www.googleapis.com/compute/v1/projects/mumnk8s-202300353/regions/us-central1/addresses/mumnk8s-zot-ip",
+            "subnetwork": "",
+            "terraform_labels": {},
+            "timeouts": null,
+            "users": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19"
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_compute_firewall",
+      "name": "zot_allow_http",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "allow": [
+              {
+                "ports": [
+                  "5000",
+                  "80",
+                  "443"
+                ],
+                "protocol": "tcp"
+              }
+            ],
+            "creation_timestamp": "2026-04-17T12:32:17.816-07:00",
+            "deny": [],
+            "description": "",
+            "destination_ranges": [],
+            "direction": "INGRESS",
+            "disabled": false,
+            "enable_logging": null,
+            "id": "projects/mumnk8s-202300353/global/firewalls/mumnk8s-zot-allow-http",
+            "log_config": [],
+            "name": "mumnk8s-zot-allow-http",
+            "network": "https://www.googleapis.com/compute/v1/projects/mumnk8s-202300353/global/networks/mumnk8s-vpc",
+            "priority": 1000,
+            "project": "mumnk8s-202300353",
+            "self_link": "https://www.googleapis.com/compute/v1/projects/mumnk8s-202300353/global/firewalls/mumnk8s-zot-allow-http",
+            "source_ranges": [
+              "0.0.0.0/0"
+            ],
+            "source_service_accounts": null,
+            "source_tags": null,
+            "target_service_accounts": null,
+            "target_tags": [
+              "mumnk8s-zot"
+            ],
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "google_compute_network.main"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_compute_firewall",
+      "name": "zot_allow_ssh",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "allow": [
+              {
+                "ports": [
+                  "22"
+                ],
+                "protocol": "tcp"
+              }
+            ],
+            "creation_timestamp": "2026-04-17T12:32:18.578-07:00",
+            "deny": [],
+            "description": "",
+            "destination_ranges": [],
+            "direction": "INGRESS",
+            "disabled": false,
+            "enable_logging": null,
+            "id": "projects/mumnk8s-202300353/global/firewalls/mumnk8s-zot-allow-ssh",
+            "log_config": [],
+            "name": "mumnk8s-zot-allow-ssh",
+            "network": "https://www.googleapis.com/compute/v1/projects/mumnk8s-202300353/global/networks/mumnk8s-vpc",
+            "priority": 1000,
+            "project": "mumnk8s-202300353",
+            "self_link": "https://www.googleapis.com/compute/v1/projects/mumnk8s-202300353/global/firewalls/mumnk8s-zot-allow-ssh",
+            "source_ranges": [
+              "0.0.0.0/0"
+            ],
+            "source_service_accounts": null,
+            "source_tags": null,
+            "target_service_accounts": null,
+            "target_tags": [
+              "mumnk8s-zot"
+            ],
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "google_compute_network.main"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_compute_network",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "auto_create_subnetworks": false,
+            "delete_default_routes_on_create": false,
+            "description": "",
+            "enable_ula_internal_ipv6": false,
+            "gateway_ipv4": "",
+            "id": "projects/mumnk8s-202300353/global/networks/mumnk8s-vpc",
+            "internal_ipv6_range": "",
+            "mtu": 0,
+            "name": "mumnk8s-vpc",
+            "network_firewall_policy_enforcement_order": "AFTER_CLASSIC_FIREWALL",
+            "numeric_id": "193749843268547651",
+            "project": "mumnk8s-202300353",
+            "routing_mode": "REGIONAL",
+            "self_link": "https://www.googleapis.com/compute/v1/projects/mumnk8s-202300353/global/networks/mumnk8s-vpc",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19"
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_compute_subnetwork",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "creation_timestamp": "2026-04-17T12:32:18.020-07:00",
+            "description": "",
+            "external_ipv6_prefix": "",
+            "fingerprint": null,
+            "gateway_address": "10.10.0.1",
+            "id": "projects/mumnk8s-202300353/regions/us-central1/subnetworks/mumnk8s-subnet",
+            "internal_ipv6_prefix": "",
+            "ip_cidr_range": "10.10.0.0/16",
+            "ipv6_access_type": "",
+            "ipv6_cidr_range": "",
+            "log_config": [],
+            "name": "mumnk8s-subnet",
+            "network": "https://www.googleapis.com/compute/v1/projects/mumnk8s-202300353/global/networks/mumnk8s-vpc",
+            "private_ip_google_access": false,
+            "private_ipv6_google_access": "DISABLE_GOOGLE_ACCESS",
+            "project": "mumnk8s-202300353",
+            "purpose": "PRIVATE",
+            "region": "us-central1",
+            "role": "",
+            "secondary_ip_range": [],
+            "self_link": "https://www.googleapis.com/compute/v1/projects/mumnk8s-202300353/regions/us-central1/subnetworks/mumnk8s-subnet",
+            "send_secondary_ip_range_if_empty": null,
+            "stack_type": "IPV4_ONLY",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "google_compute_network.main"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_container_cluster",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 2,
+          "attributes": {
+            "addons_config": null,
+            "allow_net_admin": null,
+            "authenticator_groups_config": null,
+            "binary_authorization": [],
+            "cluster_autoscaling": null,
+            "cluster_ipv4_cidr": null,
+            "confidential_nodes": null,
+            "cost_management_config": null,
+            "database_encryption": null,
+            "datapath_provider": null,
+            "default_max_pods_per_node": null,
+            "default_snat_status": null,
+            "deletion_protection": true,
+            "description": null,
+            "dns_config": [],
+            "enable_autopilot": null,
+            "enable_cilium_clusterwide_network_policy": false,
+            "enable_intranode_visibility": null,
+            "enable_k8s_beta_apis": [],
+            "enable_kubernetes_alpha": false,
+            "enable_l4_ilb_subsetting": false,
+            "enable_legacy_abac": false,
+            "enable_multi_networking": false,
+            "enable_shielded_nodes": true,
+            "enable_tpu": null,
+            "endpoint": null,
+            "fleet": [],
+            "gateway_api_config": null,
+            "id": "projects/mumnk8s-202300353/locations/us-central1/clusters/mumnk8s-gke",
+            "identity_service_config": null,
+            "initial_node_count": 1,
+            "ip_allocation_policy": [
+              {
+                "additional_pod_ranges_config": [],
+                "cluster_ipv4_cidr_block": "",
+                "cluster_secondary_range_name": "",
+                "pod_cidr_overprovision_config": [],
+                "services_ipv4_cidr_block": "",
+                "services_secondary_range_name": "",
+                "stack_type": "IPV4"
+              }
+            ],
+            "label_fingerprint": null,
+            "location": "us-central1",
+            "logging_config": null,
+            "logging_service": null,
+            "maintenance_policy": [],
+            "master_auth": null,
+            "master_authorized_networks_config": null,
+            "master_version": null,
+            "mesh_certificates": null,
+            "min_master_version": null,
+            "monitoring_config": null,
+            "monitoring_service": null,
+            "name": "mumnk8s-gke",
+            "network": "projects/mumnk8s-202300353/global/networks/mumnk8s-vpc",
+            "network_policy": [],
+            "networking_mode": "VPC_NATIVE",
+            "node_config": null,
+            "node_locations": [],
+            "node_pool": null,
+            "node_pool_auto_config": null,
+            "node_pool_defaults": null,
+            "node_version": null,
+            "notification_config": null,
+            "operation": "operation-1776454365053-7b3b90b4-da07-4005-9f8c-2c0375f5671d",
+            "private_cluster_config": [],
+            "private_ipv6_google_access": null,
+            "project": null,
+            "release_channel": [
+              {
+                "channel": "REGULAR"
+              }
+            ],
+            "remove_default_node_pool": true,
+            "resource_labels": null,
+            "resource_usage_export_config": [],
+            "security_posture_config": null,
+            "self_link": null,
+            "service_external_ips_config": null,
+            "services_ipv4_cidr": null,
+            "subnetwork": "projects/mumnk8s-202300353/regions/us-central1/subnetworks/mumnk8s-subnet",
+            "timeouts": null,
+            "tpu_ipv4_cidr_block": null,
+            "vertical_pod_autoscaling": null,
+            "workload_identity_config": [
+              {
+                "workload_pool": "mumnk8s-202300353.svc.id.goog"
+              }
+            ]
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoyNDAwMDAwMDAwMDAwLCJkZWxldGUiOjI0MDAwMDAwMDAwMDAsInJlYWQiOjI0MDAwMDAwMDAwMDAsInVwZGF0ZSI6MzYwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMiJ9",
+          "dependencies": [
+            "google_compute_network.main",
+            "google_compute_subnetwork.main",
+            "google_project_service.required"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_project_iam_member",
+      "name": "gke_node_logging",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "condition": [],
+            "etag": "BwZPrQFxa2k=",
+            "id": "mumnk8s-202300353/roles/logging.logWriter/serviceAccount:mumnk8s-gke-nodes@mumnk8s-202300353.iam.gserviceaccount.com",
+            "member": "serviceAccount:mumnk8s-gke-nodes@mumnk8s-202300353.iam.gserviceaccount.com",
+            "project": "mumnk8s-202300353",
+            "role": "roles/logging.logWriter"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "google_service_account.gke_nodes"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_project_iam_member",
+      "name": "gke_node_monitoring",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "condition": [],
+            "etag": "BwZPrQFxa2k=",
+            "id": "mumnk8s-202300353/roles/monitoring.metricWriter/serviceAccount:mumnk8s-gke-nodes@mumnk8s-202300353.iam.gserviceaccount.com",
+            "member": "serviceAccount:mumnk8s-gke-nodes@mumnk8s-202300353.iam.gserviceaccount.com",
+            "project": "mumnk8s-202300353",
+            "role": "roles/monitoring.metricWriter"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "google_service_account.gke_nodes"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_project_service",
+      "name": "required",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "index_key": "cloudresourcemanager.googleapis.com",
+          "schema_version": 0,
+          "attributes": {
+            "disable_dependent_services": null,
+            "disable_on_destroy": false,
+            "id": "mumnk8s-202300353/cloudresourcemanager.googleapis.com",
+            "project": "mumnk8s-202300353",
+            "service": "cloudresourcemanager.googleapis.com",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInJlYWQiOjYwMDAwMDAwMDAwMCwidXBkYXRlIjoxMjAwMDAwMDAwMDAwfX0="
+        },
+        {
+          "index_key": "compute.googleapis.com",
+          "schema_version": 0,
+          "attributes": {
+            "disable_dependent_services": null,
+            "disable_on_destroy": false,
+            "id": "mumnk8s-202300353/compute.googleapis.com",
+            "project": "mumnk8s-202300353",
+            "service": "compute.googleapis.com",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInJlYWQiOjYwMDAwMDAwMDAwMCwidXBkYXRlIjoxMjAwMDAwMDAwMDAwfX0="
+        },
+        {
+          "index_key": "container.googleapis.com",
+          "schema_version": 0,
+          "attributes": {
+            "disable_dependent_services": null,
+            "disable_on_destroy": false,
+            "id": "mumnk8s-202300353/container.googleapis.com",
+            "project": "mumnk8s-202300353",
+            "service": "container.googleapis.com",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInJlYWQiOjYwMDAwMDAwMDAwMCwidXBkYXRlIjoxMjAwMDAwMDAwMDAwfX0="
+        },
+        {
+          "index_key": "iam.googleapis.com",
+          "schema_version": 0,
+          "attributes": {
+            "disable_dependent_services": null,
+            "disable_on_destroy": false,
+            "id": "mumnk8s-202300353/iam.googleapis.com",
+            "project": "mumnk8s-202300353",
+            "service": "iam.googleapis.com",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInJlYWQiOjYwMDAwMDAwMDAwMCwidXBkYXRlIjoxMjAwMDAwMDAwMDAwfX0="
+        },
+        {
+          "index_key": "serviceusage.googleapis.com",
+          "schema_version": 0,
+          "attributes": {
+            "disable_dependent_services": null,
+            "disable_on_destroy": false,
+            "id": "mumnk8s-202300353/serviceusage.googleapis.com",
+            "project": "mumnk8s-202300353",
+            "service": "serviceusage.googleapis.com",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInJlYWQiOjYwMDAwMDAwMDAwMCwidXBkYXRlIjoxMjAwMDAwMDAwMDAwfX0="
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_service_account",
+      "name": "gke_nodes",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "account_id": "mumnk8s-gke-nodes",
+            "create_ignore_already_exists": null,
+            "description": "",
+            "disabled": false,
+            "display_name": "GKE node service account",
+            "email": "mumnk8s-gke-nodes@mumnk8s-202300353.iam.gserviceaccount.com",
+            "id": "projects/mumnk8s-202300353/serviceAccounts/mumnk8s-gke-nodes@mumnk8s-202300353.iam.gserviceaccount.com",
+            "member": "serviceAccount:mumnk8s-gke-nodes@mumnk8s-202300353.iam.gserviceaccount.com",
+            "name": "projects/mumnk8s-202300353/serviceAccounts/mumnk8s-gke-nodes@mumnk8s-202300353.iam.gserviceaccount.com",
+            "project": "mumnk8s-202300353",
+            "timeouts": null,
+            "unique_id": "100192485193607586416"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozMDAwMDAwMDAwMDB9fQ=="
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}

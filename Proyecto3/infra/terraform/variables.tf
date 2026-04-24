@@ -45,6 +45,18 @@ variable "node_machine_type" {
   default     = "n1-standard-2"
 }
 
+variable "gke_node_disk_type" {
+  description = "Tipo de disco para nodos de GKE"
+  type        = string
+  default     = "pd-standard"
+}
+
+variable "gke_node_disk_size_gb" {
+  description = "Tamano del disco por nodo de GKE en GB"
+  type        = number
+  default     = 30
+}
+
 variable "zot_machine_type" {
   description = "Tipo de maquina para VM de Zot"
   type        = string

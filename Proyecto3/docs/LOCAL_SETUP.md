@@ -11,8 +11,15 @@ Este proyecto se puede desarrollar desde macOS o Linux. No necesitas migrarte ob
 2. Instalar herramientas base:
 
    brew install --cask google-cloud-sdk
-   brew install kubectl terraform
+   brew install kubectl
+   brew tap hashicorp/tap
+   brew install hashicorp/tap/terraform
    brew install --cask docker
+
+   Si aparece error de formula no disponible para terraform, ejecuta:
+
+   brew update
+   brew install hashicorp/tap/terraform
 
 3. Iniciar Docker Desktop una vez para habilitar el daemon.
 

@@ -5,6 +5,8 @@ name_prefix       = "mumnk8s"
 gke_name          = "mumnk8s-gke"
 node_count        = 2
 node_machine_type = "n1-standard-2"
+gke_node_disk_type    = "pd-standard"
+gke_node_disk_size_gb = 30
 zot_machine_type  = "n1-standard-1"
 admin_cidr        = "0.0.0.0/0"
 

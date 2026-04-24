@@ -17,7 +17,7 @@ resource "google_project_iam_member" "gke_node_monitoring" {
 
 resource "google_container_cluster" "main" {
   name     = var.gke_name
-  location = var.region
+  location = var.zone
 
   network    = google_compute_network.main.id
   subnetwork = google_compute_subnetwork.main.id
@@ -40,13 +40,15 @@ resource "google_container_cluster" "main" {
 
 resource "google_container_node_pool" "main" {
   name     = "${var.name_prefix}-node-pool"
-  location = var.region
+  location = var.zone
   cluster  = google_container_cluster.main.name
 
   node_count = var.node_count
 
   node_config {
     machine_type    = var.node_machine_type
+    disk_type       = var.gke_node_disk_type
+    disk_size_gb    = var.gke_node_disk_size_gb
     service_account = google_service_account.gke_nodes.email
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"

@@ -33,8 +33,8 @@ Este directorio crea:
 
 6. Obtiene credenciales de kubectl:
 
-   gcloud container clusters get-credentials $(terraform output -raw cluster_name) \
-     --region $(terraform output -raw cluster_region) \
+    gcloud container clusters get-credentials $(terraform output -raw cluster_name) \
+       --location $(terraform output -raw cluster_location) \
      --project <tu-project-id>
 
 ## Notas de Zot

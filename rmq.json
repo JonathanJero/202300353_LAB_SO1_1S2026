@@ -1,0 +1,254 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "creationTimestamp": "2026-04-18T01:37:33Z",
+        "generateName": "rabbitmq-",
+        "generation": 1,
+        "labels": {
+            "app": "rabbitmq",
+            "apps.kubernetes.io/pod-index": "0",
+            "controller-revision-hash": "rabbitmq-8f66495db",
+            "statefulset.kubernetes.io/pod-name": "rabbitmq-0",
+            "topology.kubernetes.io/region": "us-central1",
+            "topology.kubernetes.io/zone": "us-central1-f"
+        },
+        "name": "rabbitmq-0",
+        "namespace": "mumnk8s",
+        "ownerReferences": [
+            {
+                "apiVersion": "apps/v1",
+                "blockOwnerDeletion": true,
+                "controller": true,
+                "kind": "StatefulSet",
+                "name": "rabbitmq",
+                "uid": "40ccf5a7-d212-459f-902f-a26ef506b0a2"
+            }
+        ],
+        "resourceVersion": "1776476276609759014",
+        "uid": "e11cc3d2-0266-4b7d-a4c7-fcd2ac0d739d"
+    },
+    "spec": {
+        "containers": [
+            {
+                "env": [
+                    {
+                        "name": "RABBITMQ_DEFAULT_USER",
+                        "valueFrom": {
+                            "secretKeyRef": {
+                                "key": "username",
+                                "name": "rabbitmq-auth"
+                            }
+                        }
+                    },
+                    {
+                        "name": "RABBITMQ_DEFAULT_PASS",
+                        "valueFrom": {
+                            "secretKeyRef": {
+                                "key": "password",
+                                "name": "rabbitmq-auth"
+                            }
+                        }
+                    }
+                ],
+                "image": "rabbitmq:3.13-management",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "rabbitmq",
+                "ports": [
+                    {
+                        "containerPort": 5672,
+                        "protocol": "TCP"
+                    },
+                    {
+                        "containerPort": 15672,
+                        "protocol": "TCP"
+                    }
+                ],
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "512Mi"
+                    },
+                    "requests": {
+                        "cpu": "200m",
+                        "memory": "256Mi"
+                    }
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/var/lib/rabbitmq",
+                        "name": "rabbitmq-data"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-9sb5m",
+                        "readOnly": true
+                    }
+                ]
+            }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "enableServiceLinks": true,
+        "hostname": "rabbitmq-0",
+        "nodeName": "gke-mumnk8s-gke-mumnk8s-node-pool-e0781ec5-we9f",
+        "preemptionPolicy": "PreemptLowerPriority",
+        "priority": 0,
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {},
+        "serviceAccount": "default",
+        "serviceAccountName": "default",
+        "subdomain": "rabbitmq",
+        "terminationGracePeriodSeconds": 30,
+        "tolerations": [
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/not-ready",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/unreachable",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            }
+        ],
+        "volumes": [
+            {
+                "name": "rabbitmq-data",
+                "persistentVolumeClaim": {
+                    "claimName": "rabbitmq-data-rabbitmq-0"
+                }
+            },
+            {
+                "name": "kube-api-access-9sb5m",
+                "projected": {
+                    "defaultMode": 420,
+                    "sources": [
+                        {
+                            "serviceAccountToken": {
+                                "expirationSeconds": 3607,
+                                "path": "token"
+                            }
+                        },
+                        {
+                            "configMap": {
+                                "items": [
+                                    {
+                                        "key": "ca.crt",
+                                        "path": "ca.crt"
+                                    }
+                                ],
+                                "name": "kube-root-ca.crt"
+                            }
+                        },
+                        {
+                            "downwardAPI": {
+                                "items": [
+                                    {
+                                        "fieldRef": {
+                                            "apiVersion": "v1",
+                                            "fieldPath": "metadata.namespace"
+                                        },
+                                        "path": "namespace"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-04-18T01:37:56Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodReadyToStartContainers"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-04-18T01:37:36Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "Initialized"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-04-18T01:37:36Z",
+                "message": "containers with unready status: [rabbitmq]",
+                "observedGeneration": 1,
+                "reason": "ContainersNotReady",
+                "status": "False",
+                "type": "Ready"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-04-18T01:37:36Z",
+                "message": "containers with unready status: [rabbitmq]",
+                "observedGeneration": 1,
+                "reason": "ContainersNotReady",
+                "status": "False",
+                "type": "ContainersReady"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-04-18T01:37:35Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodScheduled"
+            }
+        ],
+        "containerStatuses": [
+            {
+                "image": "rabbitmq:3.13-management",
+                "imageID": "",
+                "lastState": {},
+                "name": "rabbitmq",
+                "ready": false,
+                "restartCount": 0,
+                "started": false,
+                "state": {
+                    "waiting": {
+                        "message": "secret \"rabbitmq-auth\" not found",
+                        "reason": "CreateContainerConfigError"
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/var/lib/rabbitmq",
+                        "name": "rabbitmq-data"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-9sb5m",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            }
+        ],
+        "hostIP": "10.10.0.22",
+        "hostIPs": [
+            {
+                "ip": "10.10.0.22"
+            }
+        ],
+        "observedGeneration": 1,
+        "phase": "Pending",
+        "podIP": "10.84.1.31",
+        "podIPs": [
+            {
+                "ip": "10.84.1.31"
+            }
+        ],
+        "qosClass": "Burstable",
+        "startTime": "2026-04-18T01:37:36Z"
+    }
+}

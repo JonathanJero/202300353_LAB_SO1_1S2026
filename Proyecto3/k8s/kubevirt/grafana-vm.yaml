@@ -13,6 +13,7 @@ spec:
           registry:
             url: docker://quay.io/containerdisks/ubuntu:22.04
         storage:
+          volumeMode: Filesystem
           resources:
             requests:
               storage: 20Gi
@@ -23,10 +24,21 @@ spec:
     spec:
       domain:
         cpu:
-          cores: 2
+          cores: 1
         resources:
           requests:
-            memory: 2Gi
+            memory: 512Mi
+        devices:
+          disks:
+            - name: rootdisk
+              disk:
+                bus: virtio
+            - name: cloudinit
+              cdrom:
+                bus: sata
+          interfaces:
+            - name: default
+              masquerade: {}
       networks:
         - name: default
           pod: {}

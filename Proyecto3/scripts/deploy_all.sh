@@ -13,11 +13,11 @@ pushd infra/terraform >/dev/null
 terraform init
 terraform apply -auto-approve
 CLUSTER_NAME="$(terraform output -raw cluster_name)"
-CLUSTER_REGION="$(terraform output -raw cluster_region)"
+CLUSTER_LOCATION="$(terraform output -raw cluster_location)"
 popd >/dev/null
 
-gcloud container clusters get-credentials "$CLUSTER_NAME" --region "$CLUSTER_REGION" --project "$PROJECT_ID"
-gcloud container clusters update "$CLUSTER_NAME" --region "$CLUSTER_REGION" --gateway-api=standard
+gcloud container clusters get-credentials "$CLUSTER_NAME" --location "$CLUSTER_LOCATION" --project "$PROJECT_ID"
+gcloud container clusters update "$CLUSTER_NAME" --location "$CLUSTER_LOCATION" --gateway-api=standard
 
 ./scripts/deploy_kubevirt.sh
 ./scripts/deploy_k8s.sh

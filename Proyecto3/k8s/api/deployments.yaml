@@ -1,0 +1,250 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rust-api
+  namespace: mumnk8s
+  labels:
+    app: rust-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rust-api
+  template:
+    metadata:
+      labels:
+        app: rust-api
+    spec:
+      containers:
+      - name: rust-api
+        image: localhost:5000/rust-api:latest # TODO: Change to ZOT URL
+        ports:
+        - containerPort: 8080
+        env:
+        - name: GO_INGEST_URL
+          value: "http://go-ingest.mumnk8s.svc.cluster.local:8081/ingest"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "250m"
+            memory: "256Mi"
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: rust-api-hpa
+  namespace: mumnk8s
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: rust-api
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rust-api
+  namespace: mumnk8s
+spec:
+  selector:
+    app: rust-api
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+---
+# GO INGEST
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-ingest
+  namespace: mumnk8s
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-ingest
+  template:
+    metadata:
+      labels:
+        app: go-ingest
+    spec:
+      containers:
+      - name: go-ingest
+        image: localhost:5000/go-ingest:latest # TODO: Change to ZOT URL
+        ports:
+        - containerPort: 8081
+        env:
+        - name: GRPC_WRITER_ADDR
+          value: "go-writer.mumnk8s.svc.cluster.local:50051"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "64Mi"
+          limits:
+            cpu: "250m"
+            memory: "128Mi"
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: go-ingest-hpa
+  namespace: mumnk8s
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: go-ingest
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-ingest
+  namespace: mumnk8s
+spec:
+  selector:
+    app: go-ingest
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081
+  type: ClusterIP
+---
+# GO WRITER
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-writer
+  namespace: mumnk8s
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-writer
+  template:
+    metadata:
+      labels:
+        app: go-writer
+    spec:
+      containers:
+      - name: go-writer
+        image: localhost:5000/go-writer:latest # TODO: Change to ZOT URL
+        ports:
+        - containerPort: 50051
+        env:
+        - name: RABBITMQ_URL
+          value: "amqp://guest:guest@rabbitmq.mumnk8s.svc.cluster.local:5672/"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "64Mi"
+          limits:
+            cpu: "250m"
+            memory: "128Mi"
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: go-writer-hpa
+  namespace: mumnk8s
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: go-writer
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-writer
+  namespace: mumnk8s
+spec:
+  selector:
+    app: go-writer
+  ports:
+    - protocol: TCP
+      port: 50051
+      targetPort: 50051
+  type: ClusterIP
+---
+# GO CONSUMER
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-consumer
+  namespace: mumnk8s
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-consumer
+  template:
+    metadata:
+      labels:
+        app: go-consumer
+    spec:
+      containers:
+      - name: go-consumer
+        image: localhost:5000/go-consumer:latest # TODO: Change to ZOT URL
+        env:
+        - name: RABBITMQ_URL
+          value: "amqp://guest:guest@rabbitmq.mumnk8s.svc.cluster.local:5672/"
+        - name: REDIS_ADDR
+          value: "10.0.0.x:6379" # TODO: Change to Valkey-VM IP
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "64Mi"
+          limits:
+            cpu: "250m"
+            memory: "128Mi"
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: go-consumer-hpa
+  namespace: mumnk8s
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: go-consumer
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 30

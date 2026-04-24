@@ -2,7 +2,7 @@
 set -euo pipefail
 
 KV_VERSION="${KV_VERSION:-v1.3.0}"
-CDI_VERSION="${CDI_VERSION:-v1.60.0}"
+CDI_VERSION="${CDI_VERSION:-v1.59.0}"
 
 echo "Instalando KubeVirt ${KV_VERSION}..."
 kubectl apply -f "https://github.com/kubevirt/kubevirt/releases/download/${KV_VERSION}/kubevirt-operator.yaml"

@@ -63,7 +63,7 @@ Conecta kubectl a tu cluster:
 
 ```bash
 gcloud container clusters get-credentials $(terraform output -raw cluster_name) \
-  --region $(terraform output -raw cluster_region) \
+  --location $(terraform output -raw cluster_location) \
   --project TU_PROJECT_ID
 ```
 
@@ -71,7 +71,7 @@ Activa Gateway API en GKE:
 
 ```bash
 gcloud container clusters update $(terraform output -raw cluster_name) \
-  --region $(terraform output -raw cluster_region) \
+  --location $(terraform output -raw cluster_location) \
   --gateway-api=standard
 ```
 
