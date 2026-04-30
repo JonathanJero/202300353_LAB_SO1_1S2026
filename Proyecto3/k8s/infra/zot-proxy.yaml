@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: zot-proxy
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: zot-proxy
+  template:
+    metadata:
+      labels:
+        name: zot-proxy
+    spec:
+      hostNetwork: true
+      tolerations:
+      - operator: Exists
+      containers:
+      - name: proxy
+        image: nginx:alpine
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          cat <<EOF > /etc/nginx/nginx.conf
+          events {}
+          http {
+            server {
+              listen 5000;
+              location / {
+                proxy_pass http://35.238.80.248:5000;
+              }
+            }
+          }
+          EOF
+          nginx -g 'daemon off;'

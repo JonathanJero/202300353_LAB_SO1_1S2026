@@ -22,14 +22,14 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: /grpc-${CARNET}
+            value: /grpc-202300353
       backendRefs:
         - name: rust-api
           port: 8080
     - matches:
         - path:
             type: PathPrefix
-            value: /dapr-${CARNET}
+            value: /dapr-202300353
       backendRefs:
         - name: rust-api
           port: 8080

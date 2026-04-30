@@ -10,11 +10,15 @@ pub struct WarReport {
     timestamp: String,
 }
 
+#[actix_web::get("/")]
+async fn health_check() -> impl Responder {
+    HttpResponse::Ok().body("Healthy")
+}
+
 #[post("/grpc-202300353")]
-async fn handle_report(item: web::Json<WarReport>) -> impl Responder {
+async fn handle_report(item: web::Json<WarReport>, client: web::Data<Client>) -> impl Responder {
     let url = std::env::var("GO_INGEST_URL").unwrap_or_else(|_| "http://go-ingest.mumnk8s.svc.cluster.local:8081/ingest".to_string());
     
-    let client = Client::new();
     match client.post(&url).json(&item.0).send().await {
         Ok(res) if res.status().is_success() => {
             HttpResponse::Ok().json(serde_json::json!({"status": "M.U.M.N.K8s API Rust - Forwarded"}))
@@ -31,8 +35,12 @@ async fn handle_report(item: web::Json<WarReport>) -> impl Responder {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     println!("Rust API Gateway listening on port 8080...");
-    HttpServer::new(|| {
-        App::new().service(handle_report)
+    let client = Client::new();
+    HttpServer::new(move || {
+        App::new()
+            .app_data(web::Data::new(client.clone()))
+            .service(handle_report)
+            .service(health_check)
     })
     .bind(("0.0.0.0", 8080))?
     .run()

@@ -27,7 +27,8 @@ spec:
           cores: 1
         resources:
           requests:
-            memory: 512Mi
+            memory: 256Mi
+            cpu: 100m
         devices:
           disks:
             - name: rootdisk
